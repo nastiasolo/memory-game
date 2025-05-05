@@ -25,7 +25,7 @@ export default function MemoryCard({
         <EmojiButton
           content={decodeEntity(emoji.htmlCode[0])}
           handleClick={() => handleClick(emoji.name, index)}
-          selectedCartEntry={selectedCardEntry}
+          selectedCardEntry={selectedCardEntry}
           matchedCardEntry={matchedCardEntry}
         />
       </li>
