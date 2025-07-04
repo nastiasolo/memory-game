@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
+import AssistiveTechInfo from "./components/AssistiveTechInfo";
 import Form from "./components/Form";
 import MemoryCard from "./components/MemoryCard";
+import GameOver from "./components/GameOver";
 
 function App() {
   const [isGameOn, setIsGameOn] = useState(false);
   const [emojisData, setEmojisData] = useState([]);
   const [selectedCards, setSelectedCards] = useState([]);
   const [matchedCards, setMatchedCards] = useState([]);
-  const [isGameOver, setGameOver] = useState(false);
+  const [areAllCardsMatched, setAreAllCardsMatched] = useState(false);
 
   console.log(selectedCards);
 
@@ -32,7 +34,7 @@ function App() {
 
   useEffect(() => {
     if (emojisData.length && matchedCards.length === emojisData.length) {
-      setGameOver(true);
+      setAreAllCardsMatched(true);
     }
   }, [matchedCards]);
 
@@ -106,11 +108,25 @@ function App() {
     }
   }
 
+  function resetGame() {
+    setIsGameOn(false);
+    setSelectedCards([]);
+    setMatchedCards([]);
+    setAreAllCardsMatched(false);
+  }
+
   return (
     <>
       <main>
         <h1>Memory Game</h1>
         {!isGameOn && <Form handleSubmit={startGame} />}
+        {isGameOn && !areAllCardsMatched && (
+          <AssistiveTechInfo
+            emojiData={emojisData}
+            matchedCards={matchedCards}
+          />
+        )}
+        {areAllCardsMatched && <GameOver handleClick={resetGame} />}
         {isGameOn && (
           <MemoryCard
             data={emojisData}
