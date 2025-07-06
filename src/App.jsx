@@ -3,15 +3,22 @@ import AssistiveTechInfo from "./components/AssistiveTechInfo";
 import Form from "./components/Form";
 import MemoryCard from "./components/MemoryCard";
 import GameOver from "./components/GameOver";
+import ErrorCard from "./components/ErrorCard";
 
 function App() {
+  const initialFormData = {
+    category: "food-and-drink",
+    number: 10,
+  };
+
+  const [isFirstRender, setIsFirstRender] = useState(true);
+  const [formData, setFormData] = useState(initialFormData);
   const [isGameOn, setIsGameOn] = useState(false);
   const [emojisData, setEmojisData] = useState([]);
   const [selectedCards, setSelectedCards] = useState([]);
   const [matchedCards, setMatchedCards] = useState([]);
   const [areAllCardsMatched, setAreAllCardsMatched] = useState(false);
-
-  console.log(selectedCards);
+  const [isError, setIsError] = useState(false);
 
   useEffect(() => {
     if (
@@ -38,12 +45,19 @@ function App() {
     }
   }, [matchedCards]);
 
+  function handleFormChange(e) {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [e.target.name]: e.target.value,
+    }));
+  }
+
   async function startGame(e) {
     e.preventDefault();
 
     try {
       const response = await fetch(
-        "https://emojihub.yurace.pro/api/all/category/food-and-drink"
+        `https://emojihub.yurace.pro/api/all/category/${formData.category}`
       );
 
       if (!response.ok) {
@@ -58,8 +72,12 @@ function App() {
       setEmojisData(emojisArray);
 
       setIsGameOn(true);
+      setIsFirstRender(false);
     } catch (error) {
       console.error("Failed to fetch:", error);
+      setIsError(true);
+    } finally {
+      setIsFirstRender(false);
     }
   }
 
@@ -74,7 +92,7 @@ function App() {
 
   function getRandomIndices(data) {
     const randomIndicesArray = [];
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < formData.number / 2; i++) {
       const randomIndex = Math.floor(Math.random() * data.length);
       if (!randomIndicesArray.includes(randomIndex)) {
         randomIndicesArray.push(randomIndex);
@@ -115,11 +133,21 @@ function App() {
     setAreAllCardsMatched(false);
   }
 
+  function resetError() {
+    setIsError(false);
+  }
+
   return (
     <>
       <main>
         <h1>Memory Game</h1>
-        {!isGameOn && <Form handleSubmit={startGame} />}
+        {!isGameOn && !isError && (
+          <Form
+            handleSubmit={startGame}
+            handleChange={handleFormChange}
+            isFirstRender={isFirstRender}
+          />
+        )}
         {isGameOn && !areAllCardsMatched && (
           <AssistiveTechInfo
             emojiData={emojisData}
@@ -135,6 +163,7 @@ function App() {
             matchedCards={matchedCards}
           />
         )}
+        {isError && <ErrorCard handleClick={resetError} />}
       </main>
     </>
   );
